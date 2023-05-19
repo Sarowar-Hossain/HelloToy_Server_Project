@@ -36,12 +36,50 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/productDetails/:id', async(req, res)=>{
+    app.get("/productDetails/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await dataCollection.findOne(query);
       res.send(result);
-    })
+    });
+
+    app.get("/mytoys", async (req, res) => {
+      let query = {};
+      if (req.query?.sellerEmail) {
+        query = { sellerEmail: req.query.sellerEmail };
+      }
+
+      const sortOrder = req.query?.sortOrder === "desc" ? -1 : 1;
+      const sortBy = req.query?.sortBy || "name"; // Default sort by name
+
+      const cursor = dataCollection.find(query).sort({ [sortBy]: sortOrder });
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.patch("/mytoys/:id", async (req, res) => {
+      const info = req.body;
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateInfo = {
+        $set: {
+          price: info.price,
+          quantity: info.quantity,
+          picture: info.picture,
+          description: info.description,
+        },
+      };
+      const result = await dataCollection.updateOne(query, updateInfo, options);
+      res.send(result);
+    });
+
+    app.delete("/mytoys/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const deleteUser = await dataCollection.deleteOne(query);
+      res.send(deleteUser);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
@@ -53,12 +91,14 @@ async function run() {
     // await client.close();
   }
 }
+
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
   res.send("hello from toy server");
 });
 
-app.listen(port, () => {
+app.listen
+(port, () => {
   console.log(`this port is running on port: ${port}`);
 });
