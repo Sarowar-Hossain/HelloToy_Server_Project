@@ -35,7 +35,10 @@ async function run() {
       const limit = parseInt(req.query.limit);
       const searchString = req.query.search;
       const query = searchString ? { $text: { $search: searchString } } : {};
-      const result = await dataCollection.find(query).limit(limit).toArray();
+      const result = await dataCollection
+        .find(query)
+        .limit(limit)
+        .toArray();
       res.send(result);
       console.log(result);
     });
