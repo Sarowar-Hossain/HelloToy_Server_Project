@@ -32,8 +32,12 @@ async function run() {
     });
 
     app.get("/products", async (req, res) => {
-      const result = await dataCollection.find().toArray();
+      const limit = parseInt(req.query.limit);
+      const searchString = req.query.search;
+      const query = searchString ? { $text: { $search: searchString } } : {};
+      const result = await dataCollection.find(query).limit(limit).toArray();
       res.send(result);
+      console.log(result);
     });
 
     app.post("/addtoys", async (req, res) => {
