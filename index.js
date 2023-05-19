@@ -36,6 +36,13 @@ async function run() {
       res.send(result);
     });
 
+    app.post("/addtoys", async (req, res) => {
+      const product = req.body;
+      const result = await dataCollection.insertOne(product);
+      res.send(result);
+      console.log(result);
+    });
+
     app.get("/productDetails/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -50,7 +57,7 @@ async function run() {
       }
 
       const sortOrder = req.query?.sortOrder === "desc" ? -1 : 1;
-      const sortBy = req.query?.sortBy || "name"; // Default sort by name
+      const sortBy = req.query?.sortBy || "name";
 
       const cursor = dataCollection.find(query).sort({ [sortBy]: sortOrder });
       const result = await cursor.toArray();
@@ -98,7 +105,6 @@ app.get("/", (req, res) => {
   res.send("hello from toy server");
 });
 
-app.listen
-(port, () => {
+app.listen(port, () => {
   console.log(`this port is running on port: ${port}`);
 });
