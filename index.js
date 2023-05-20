@@ -5,7 +5,14 @@ const port = process.env.PORT || 5000;
 require("dotenv").config();
 
 // middle ware
-app.use(cors());
+
+const corConfig = {
+  origin: "*",
+  credentials: true,
+  methods: ["GET", "POST", "DELETE", "PATCH", "OPTIONS"],
+};
+
+app.use(cors(corConfig));
 app.use(express.json());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
@@ -23,12 +30,12 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     const dataCollection = client.db("helloToys").collection("toyCollection");
 
     const indexKeys = { name: 1, subCategory: 1 };
     const indexOptions = { title: "subCategoryName" };
-    const result = await dataCollection.createIndex(indexKeys);
+    // const result = await dataCollection.createIndex(indexKeys);
 
     app.get("/categoryData", async (req, res) => {
       const result = await dataCollection.find().toArray();
