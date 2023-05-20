@@ -26,6 +26,10 @@ async function run() {
     await client.connect();
     const dataCollection = client.db("helloToys").collection("toyCollection");
 
+    const indexKeys = { name: 1, subCategory: 1 };
+    const indexOptions = { title: "subCategoryName" };
+    const result = await dataCollection.createIndex(indexKeys);
+
     app.get("/categoryData", async (req, res) => {
       const result = await dataCollection.find().toArray();
       res.send(result);
@@ -34,11 +38,14 @@ async function run() {
     app.get("/products", async (req, res) => {
       const limit = parseInt(req.query.limit);
       const searchString = req.query.search;
-      const query = searchString ? { $text: { $search: searchString } } : {};
-      const result = await dataCollection
-        .find(query)
-        .limit(limit)
-        .toArray();
+
+      const query = {
+        $or: [
+          { name: { $regex: searchString, $options: "i" } },
+          { subCategory: { $regex: searchString, $options: "i" } },
+        ],
+      };
+      const result = await dataCollection.find(query).limit(limit).toArray();
       res.send(result);
       console.log(result);
     });
