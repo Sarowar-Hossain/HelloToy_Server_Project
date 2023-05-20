@@ -37,15 +37,19 @@ async function run() {
     const indexOptions = { title: "subCategoryName" };
     // const result = await dataCollection.createIndex(indexKeys);
 
+
+    // Get all category data
+
     app.get("/categoryData", async (req, res) => {
       const result = await dataCollection.find().toArray();
       res.send(result);
     });
 
+    // Get products with search and limit parameters
+
     app.get("/products", async (req, res) => {
       const limit = parseInt(req.query.limit);
       const searchString = req.query.search;
-
       const query = {
         $or: [
           { name: { $regex: searchString, $options: "i" } },
@@ -57,6 +61,9 @@ async function run() {
       console.log(result);
     });
 
+    
+    // Add a new toy product
+
     app.post("/addtoys", async (req, res) => {
       const product = req.body;
       const result = await dataCollection.insertOne(product);
@@ -64,6 +71,7 @@ async function run() {
       console.log(result);
     });
 
+ // Get product details by ID
     app.get("/productDetails/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -71,19 +79,21 @@ async function run() {
       res.send(result);
     });
 
+// Get "my toys" with optional query parameters for filtering and sorting
     app.get("/mytoys", async (req, res) => {
       let query = {};
       if (req.query?.sellerEmail) {
         query = { sellerEmail: req.query.sellerEmail };
       }
-
       const sortOrder = req.query?.sortOrder === "desc" ? -1 : 1;
       const sortBy = req.query?.sortBy || "name";
-
       const cursor = dataCollection.find(query).sort({ [sortBy]: sortOrder });
       const result = await cursor.toArray();
       res.send(result);
     });
+
+
+    // Update a toy product by ID
 
     app.patch("/mytoys/:id", async (req, res) => {
       const info = req.body;
@@ -102,12 +112,14 @@ async function run() {
       res.send(result);
     });
 
+ // Delete a toy product by ID
     app.delete("/mytoys/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const deleteUser = await dataCollection.deleteOne(query);
       res.send(deleteUser);
     });
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
